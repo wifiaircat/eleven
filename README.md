@@ -3,10 +3,17 @@ System Programming 2025 Team 11
 
 
 virt_manager/
-¦§¦¡¦¡ nvmevirt_logger.c          # insmod/mount/rmmod/umount ½Ã append log
-¦§¦¡¦¡ nvmevirt_notify_client.c   # »ç¿ëÀÚ ¿¹¾à ¿äÃ» ¹× ´ë±â
-¦§¦¡¦¡ nvmevirt_notify_server.c   # ¿¹¾à Å¥ °ü¸® + ¾Ë¸² Àü¼Û
-¦§¦¡¦¡ watch_nvmevirt.c           # ºñÈ°¼º »ç¿ëÀÚ °¨½Ã + ¾Ë¸²
-¦§¦¡¦¡ nvmevirt.log               # log file
-¦§¦¡¦¡ nvmevirt.queue             # ¿¹¾à ´ë±â¿­ ÆÄÀÏ
-¦§¦¡¦¡ Makefile
+
+â”œâ”€â”€ nvmevirt_logger.c          # insmod/mount/rmmod/umount ì‹œ append log
+
+â”œâ”€â”€ nvmevirt_notify_client.c   # ì‚¬ìš©ì ì˜ˆì•½ ìš”ì²­ ë° ëŒ€ê¸°
+
+â”œâ”€â”€ nvmevirt_notify_server.c   # ì˜ˆì•½ í ê´€ë¦¬ + ì•Œë¦¼ ì „ì†¡
+
+â”œâ”€â”€ watch_nvmevirt.c           # ë¹„í™œì„± ì‚¬ìš©ì ê°ì‹œ + ì•Œë¦¼
+
+â”œâ”€â”€ nvmevirt.log               # log file
+
+â”œâ”€â”€ nvmevirt.queue             # ì˜ˆì•½ ëŒ€ê¸°ì—´ íŒŒì¼
+
+â”œâ”€â”€ Makefile
