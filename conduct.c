@@ -12,7 +12,6 @@ whether add failed try or not???
 
 int main(){
     int ret;
-    int ret2;
 
     //open log file
 
@@ -52,7 +51,6 @@ int main(){
     // 3. manager
     printf("conducting virt_manager...\n");
     //open log file and add log
-
 
     return 0;
 }
