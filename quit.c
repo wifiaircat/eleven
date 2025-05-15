@@ -10,19 +10,13 @@ int main(){
     int ret;
     
     // system() -> implement by execvp()
-    // 1. umount
-    printf("conducting umount...\n");
+    // 1. umount 2. rmmod
+    printf("conducting umount and rmmod...\n");
 
-    ret = system("sudo umount /dev/nvme0n1");
+    ret = system("sudo umount /dev/nvme0n1 & sudo rmmod nvmev");
     if (ret != 0){
-        printf("failed to umount\n");
+        printf("failed to umount and rmmod\n");
     }
-
-    // 2. rmmod
-    printf("conducting rmmod...\n");
-    ret = system("sudo rmmod nvmev");
-    if (ret != 0)
-        printf("failed to rmmod\n");
 
     return 0;
 }
