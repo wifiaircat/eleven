@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include <sys/socket.h>
 #include <sys/un.h>
+#include "log_util.h" // write_log() header file
 
 #define CURRENT_FILE "current_status.txt"
 #define QUEUE_FILE "queue.txt"
