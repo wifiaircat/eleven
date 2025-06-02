@@ -1,59 +1,97 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <unistd.h>
+#include <string.h>
 
-#define STAT_PATH "/sys/block/nvmev0n1/stat"
-#define SLEEP_SEC 30
-#define STAT_LINE_LEN 256
-
-int read_stat(char *buf, size_t size) {
-    FILE *fp = fopen(STAT_PATH, "r");
-    if (!fp) {
-        perror("fopen");
-        return -1;
-    }
-
-    if (!fgets(buf, size, fp)) {
-        perror("fgets");
-        fclose(fp);
-        return -1;
-    }
-
-    fclose(fp);
-    return 0;
-}
+#define CMD_CUR_USER "tail -n 1 /proc/mounts"
+#define CMD_DMESG "dmesg | grep nvmevirt | tail -n 1"
+#define LOGLEVEL_PATH "/proc/sys/kernel/printk"
+#define UPTIME_PATH "/proc/uptime"
+#define THRESHOLD_SEC 30
 
 int main() {
-    char stat_before[STAT_LINE_LEN];
-    char stat_after[STAT_LINE_LEN];
+    /*
+    this function is about current user.
+    check status of current user >
+    if not active > ask to exit > (automatically exit(??))
 
-    // stat 파일 존재 여부 확인
-    if (access(STAT_PATH, F_OK) != 0) {
-        fprintf(stderr, "[X] %s file dosen't exits.\n", STAT_PATH);
+    prediction : after insmod and mount (there is user rn)
+    */
+    // 1. who is current user
+    FILE *fp = popen(CMD_CUR_USER, "r");
+    if (!fp) {
+        perror("fail to popen"); return 1;
+    }
+
+    char cur_usr_buffer[512];
+    if (!fgets(cur_usr_buffer, sizeof(cur_usr_buffer), fp)) {
+        fprintf(stderr, "[X] Failed to read /proc/mounts\n");
+        pclose(fp);
+        return 1;
+    }
+    pclose(fp);
+
+    char *device = strtok(cur_usr_buffer, " ");
+    char *mount_point = strtok(NULL, " ");
+
+    if (!device || !mount_point) {
+        fprintf(stderr, "[X] Failed to parse mount entry.\n");
         return 1;
     }
 
-    // 처음 stat 값 읽기
-    if (read_stat(stat_before, sizeof(stat_before)) != 0) {
-        fprintf(stderr, "[X] failed to read 1st stat file\n");
+    printf("[+] Detected device: %s mounted on %s\n", device, mount_point);
+
+    if (strstr(device, "nvmev0n1") == NULL) {
+        printf("[-] Not nvmevirt device. Exit.\n");
+        return 0;
+    }
+
+    // 2. check kernel log lv
+    int console_loglevel = -1;
+    fp = fopen(LOGLEVEL_PATH, "r");
+    if (!fp || fscanf(fp, "%d", &console_loglevel) != 1) {
+        fprintf(stderr, "[X] Failed to read loglevel\n");
+        if (fp) fclose(fp);
+        return 1;
+    }
+    fclose(fp);
+
+    if (console_loglevel < 6) {
+        fprintf(stderr, "[!] Loglevel < 6. nvmevirt logs might not appear.\n");
+        fprintf(stderr, "    Try: echo 6 > /proc/sys/kernel/printk\n");
         return 1;
     }
 
-    // 대기
-    sleep(SLEEP_SEC);
+    // 3. get last(tail) log
+    char dmesg_line[1024];
+    fp = popen(CMD_DMESG, "r");
+    if (!fp || !fgets(dmesg_line, sizeof(dmesg_line), fp)) {
+        fprintf(stderr, "[X] Failed to read dmesg nvmevirt line\n");
+        if (fp) pclose(fp);
+        return 1;
+    }
+    pclose(fp);
 
-    // 두 번째 stat 값 읽기
-    if (read_stat(stat_after, sizeof(stat_after)) != 0) {
-        fprintf(stderr, "[X] failed to read 2nd stat file.\n");
+    double last_time = -1, uptime_now = -1;
+    if (sscanf(dmesg_line, "[%lf]", &last_time) != 1) {
+        fprintf(stderr, "[X] Failed to parse timestamp from dmesg\n");
         return 1;
     }
 
-    // 비교
-    if (strcmp(stat_before, stat_after) == 0) {
-        printf("[!] %s: %dsec no move.\n", STAT_PATH, SLEEP_SEC);
+    // 4. read current system utime
+    fp = fopen(UPTIME_PATH, "r");
+    if (!fp || fscanf(fp, "%lf", &uptime_now) != 1) {
+        fprintf(stderr, "[X] Failed to read /proc/uptime\n");
+        if (fp) fclose(fp);
+        return 1;
+    }
+    fclose(fp);
+
+    double diff = uptime_now - last_time;
+    if (diff > THRESHOLD_SEC) {
+        printf("[!] No activity for %.0f sec. Consider unmounting %s\n", diff, mount_point);
     } else {
-        printf("[✓] %s: active.\n", STAT_PATH);
+        printf("[*] Device active (%.0f sec since last I/O).\n", diff);
     }
 
     return 0;
