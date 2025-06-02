@@ -1,9 +1,13 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
 #include <string.h>
+#include <unistd.h>
 
-    int main(){
+#define STAT_PATH "/sys/block/nvmev0n1/stat"
+#define SLEEP_SEC 30
+#define STAT_LINE_LEN 256
+
+int main(){
     /*
     this function is about current user.
     check status of current user >
