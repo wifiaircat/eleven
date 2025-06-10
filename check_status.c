@@ -4,94 +4,85 @@
 #include <string.h>
 
 #define CMD_CUR_USER "tail -n 1 /proc/mounts"
-#define CMD_DMESG "dmesg | grep nvmevirt | tail -n 1"
+#define CMD_DMESG "sudo dmesg | grep nvmevirt | tail -n 1"
 #define LOGLEVEL_PATH "/proc/sys/kernel/printk"
 #define UPTIME_PATH "/proc/uptime"
-#define THRESHOLD_SEC 30
+#define INTERVAL_SEC 3000
 
 int main() {
-    /*
-    this function is about current user.
-    check status of current user >
-    if not active > ask to exit > (automatically exit(??))
-
-    prediction : after insmod and mount (there is user rn)
-    */
     // 1. who is current user
-    FILE *fp = popen(CMD_CUR_USER, "r");
-    if (!fp) {
-        perror("fail to popen"); return 1;
-    }
+        FILE *fp = popen(CMD_CUR_USER, "r");
+        if (!fp) { perror("fail to popen"); }
 
-    char cur_usr_buffer[512];
-    if (!fgets(cur_usr_buffer, sizeof(cur_usr_buffer), fp)) {
-        fprintf(stderr, "[X] Failed to read /proc/mounts\n");
+        char cur_usr_buffer[256];
+        if (!fgets(cur_usr_buffer, sizeof(cur_usr_buffer), fp)) {
+            fprintf(stderr, "[F] Failed to read /proc/mounts\n");
+            pclose(fp); return 1;
+        }
         pclose(fp);
-        return 1;
-    }
-    pclose(fp);
 
-    char *device = strtok(cur_usr_buffer, " ");
-    char *mount_point = strtok(NULL, " ");
+        char *device = strtok(cur_usr_buffer, " ");
+        char *mount_point = strtok(NULL, " ");
+        printf("[*] Checking device: %s mounted on %s\n", device, mount_point);
 
-    if (!device || !mount_point) {
-        fprintf(stderr, "[X] Failed to parse mount entry.\n");
-        return 1;
-    }
+        // 2. check kernel log lv
+        int console_loglevel = -1;
+        fp = fopen(LOGLEVEL_PATH, "r");
+        if (!fp || fscanf(fp, "%d", &console_loglevel) != 1) {
+            fprintf(stderr, "[F] Failed to read loglevel\n");
+        }
+        fclose(fp);
 
-    printf("[+] Detected device: %s mounted on %s\n", device, mount_point);
+        if (console_loglevel < 6) {
+            fprintf(stderr, "[!] Loglevel %d is < 6. nvmevirt logs might not appear.\n", console_loglevel);
+            fprintf(stderr, "    Try: echo 6 > /proc/sys/kernel/printk\n");
+        }
 
-    if (strstr(device, "nvmev0n1") == NULL) {
-        printf("[-] Not nvmevirt device. Exit.\n");
-        return 0;
-    }
+    while(1){
+        // 3. get last(tail) log
+        char dmesg_line[1024];
+        fp = popen(CMD_DMESG, "r");
+        if (!fp) {
+            perror("[X] popen for CMD_DMESG failed");
+            sleep(10);
+            continue;
+        }
 
-    // 2. check kernel log lv
-    int console_loglevel = -1;
-    fp = fopen(LOGLEVEL_PATH, "r");
-    if (!fp || fscanf(fp, "%d", &console_loglevel) != 1) {
-        fprintf(stderr, "[X] Failed to read loglevel\n");
-        if (fp) fclose(fp);
-        return 1;
-    }
-    fclose(fp);
+        if (!fgets(dmesg_line, sizeof(dmesg_line), fp)) {
+            fprintf(stderr, "[X] Failed to read dmesg nvmevirt line\n");
+            if(fp) fclose(fp);
+            sleep(10);
+            continue;
+        }
+        fclose(fp);
 
-    if (console_loglevel < 6) {
-        fprintf(stderr, "[!] Loglevel < 6. nvmevirt logs might not appear.\n");
-        fprintf(stderr, "    Try: echo 6 > /proc/sys/kernel/printk\n");
-        return 1;
-    }
+        double last_time = -1, uptime_now = -1;
+        if (sscanf(dmesg_line, "[%lf]", &last_time) != 1) {
+            fprintf(stderr, "[X] Failed to parse timestamp from dmesg\n");
+            sleep(10);
+            continue;
+        }
 
-    // 3. get last(tail) log
-    char dmesg_line[1024];
-    fp = popen(CMD_DMESG, "r");
-    if (!fp || !fgets(dmesg_line, sizeof(dmesg_line), fp)) {
-        fprintf(stderr, "[X] Failed to read dmesg nvmevirt line\n");
-        if (fp) pclose(fp);
-        return 1;
-    }
-    pclose(fp);
+        // 4. read current system utime
+        fp = fopen(UPTIME_PATH, "r");
+        if (!fp || fscanf(fp, "%lf", &uptime_now) != 1) {
+            fprintf(stderr, "[X] Failed to read /proc/uptime\n");
+            if(fp) fclose(fp);
+            sleep(10);
+            continue;
+        }
+        fclose(fp);
 
-    double last_time = -1, uptime_now = -1;
-    if (sscanf(dmesg_line, "[%lf]", &last_time) != 1) {
-        fprintf(stderr, "[X] Failed to parse timestamp from dmesg\n");
-        return 1;
-    }
+        double diff_sec = uptime_now - last_time;
+        double diff_min = diff_sec / 60;
+        if (diff_sec > INTERVAL_SEC) {
+            printf("[!] No activity for %.1fmin. Consider unmounting %s\n", diff_min, mount_point);
+        } else {
+            printf("[*] Device active (%.1fmin since last I/O).\n", diff_min);
+        }
 
-    // 4. read current system utime
-    fp = fopen(UPTIME_PATH, "r");
-    if (!fp || fscanf(fp, "%lf", &uptime_now) != 1) {
-        fprintf(stderr, "[X] Failed to read /proc/uptime\n");
-        if (fp) fclose(fp);
-        return 1;
-    }
-    fclose(fp);
-
-    double diff = uptime_now - last_time;
-    if (diff > THRESHOLD_SEC) {
-        printf("[!] No activity for %.0f sec. Consider unmounting %s\n", diff, mount_point);
-    } else {
-        printf("[*] Device active (%.0f sec since last I/O).\n", diff);
+        printf("[*] Sleeping for %dmin...\n", INTERVAL_SEC / 60);
+        sleep(INTERVAL_SEC);
     }
 
     return 0;
