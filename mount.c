@@ -48,7 +48,7 @@ int main(){
     int ins_ret = system(ins_cmd); // success = 0
     if (ins_ret){ // insmod failed
         //printf("[F] Failed to insmod from %s\n", username);
-        strcpy(status_mesg, "[F] Failed to insmod from");
+        strcpy(status_mesg, "failed to insmod from");
         success = FALSE;
     } else { // insmod success
         // 2. mount
@@ -94,10 +94,10 @@ int main(){
         }
         printf("[*] You can now run other commands such as ./fio.sh\n");
     } else {
-        printf("Do you want to wait? (y/n): ");
-        char answer;
+        printf("Do you want to wait? (yes/no): ");
+        char answer[4];
         scanf("%s", answer);
-        if (strcmp(answer, "y") == 0) {
+        if (strcmp(answer, "yes") == 0) {
             enqueue(username);
             printf("[S] Wait completed. Exiting.\n");
         }
