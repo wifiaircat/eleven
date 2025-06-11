@@ -10,6 +10,7 @@
 
 #define QUEUE_FILE "virt_queue.txt"
 #define LOG_FILE "virt_log.txt"
+#define DEVICE_NAME "/dev/nvme0n1"
 
 void notify_next_user();
 void write_log(const char *user, const char *status);
@@ -17,23 +18,29 @@ int dequeue(char *next_user);
 
 int main(){
     char status_mesg[256] = "NULL\n";
+    char umt_cmd[256];
 
     char *username = getlogin();
     if (username == NULL) {
-        perror("getlogin: failed\n");
+        perror("faile to getlogin\n");
         //printf("[F] Failed to get username\n");
     }
 
     printf("[*] Conducting umount and rmmod...\n");
 
-    //ret = system("sudo umount /dev/nvme0n1 & sudo rmmod nvmev");
-    if (!system("sudo umount /dev/nvme0n1 & sudo rmmod nvmev")){
-        notify_next_user();
-        printf("umount and rmmod done successfully!\n");
-        strcpy(status_mesg, "succeed to umount and rmmod -");
+    snprintf(umt_cmd, sizeof(umt_cmd), "sudo umount %s", DEVICE_NAME);
+    int umt_ret = system(umt_cmd);
+    if (!umt_ret){
+        int rmmod_ret = system("sudo rmmod nvmev");
+        if (!rmmod_ret){
+            strcpy(status_mesg, "succeed to umount and rmmod -");
+            printf("umount and rmmod done successfully!\n");
+            notify_next_user();
+        } else {
+            strcpy(status_mesg, "failed to rmmod -");
+        }
     } else {
         strcpy(status_mesg, "failed to umount and rmmod -");
-
     }
 
     printf("%s %s\n", status_mesg, username);
@@ -86,7 +93,8 @@ void notify_next_user() {
     addr.sun_family = AF_UNIX;
     strncpy(addr.sun_path, sock_path, sizeof(addr.sun_path) - 1);
 
-    if (sendto(sock, "go", 2, 0, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
+    int sendto_ret = sendto(sock, "go", 2, 0, (struct sockaddr *)&addr, sizeof(addr));
+    if (sendto_ret < 0) {
         fprintf(stderr, "failed to notify\n");
     } else {
         printf("nofity next user done successfully!\n");
@@ -94,7 +102,6 @@ void notify_next_user() {
 
     close(sock);
 }
-
 
 void write_log(const char *user, const char *status) {
     FILE *fp = fopen(LOG_FILE, "a");

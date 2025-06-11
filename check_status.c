@@ -30,10 +30,14 @@ int main() {
         // 2. check kernel log lv
         int console_loglevel = -1;
         fp = fopen(LOGLEVEL_PATH, "r");
-        if (!fp || fscanf(fp, "%d", &console_loglevel) != 1) {
-            fprintf(stderr, "failed to read loglevel\n");
+        if (!fp) {
+            fprintf(stderr, "failed to open loglevel\n");
+        } else {
+            if (fscanf(fp, "%d", &console_loglevel) != 1) {
+                fprintf(stderr, "failed to read loglevel\n");
+            }
+            fclose(fp);
         }
-        fclose(fp);
 
         if (console_loglevel < 6) {
             fprintf(stderr, "loglevel %d is < 6. nvmevirt logs might not appear.\n", console_loglevel);
