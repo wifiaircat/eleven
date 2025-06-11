@@ -17,22 +17,28 @@ void write_log(const char *user, const char *status);
 int dequeue(char *next_user);
 
 int main(){
+    char status_mesg[256] = "NULL\n";
+
     char *username = getlogin();
     if (username == NULL) {
         perror("getlogin: failed\n");
         //printf("[F] Failed to get username\n");
     }
-    int ret;
-    
+
     printf("[*] Conducting umount and rmmod...\n");
 
-    ret = system("sudo umount /dev/nvme0n1 & sudo rmmod nvmev");
-    if (!ret){
+    //ret = system("sudo umount /dev/nvme0n1 & sudo rmmod nvmev");
+    if (!system("sudo umount /dev/nvme0n1 & sudo rmmod nvmev")){
         notify_next_user();
-        printf("[S] umount and rmmod done successfully!\n");
+        printf("umount and rmmod done successfully!\n");
+        strcpy(status_mesg, "succeed to umount and rmmod -");
     } else {
-        printf("[F] Failed to umount and rmmod\n");
+        strcpy(status_mesg, "failed to umount and rmmod -");
+
     }
+
+    printf("%s %s\n", status_mesg, username);
+    write_log(username, status_mesg);
 
     return 0;
 }
@@ -64,7 +70,7 @@ int dequeue(char *next_user) {
 void notify_next_user() {
     char next_user[64];
     if (!dequeue(next_user)) {
-        printf("no waiting user");
+        printf("(no waiting user)\n");
         return;
     }
 
@@ -73,7 +79,7 @@ void notify_next_user() {
 
     int sock = socket(AF_UNIX, SOCK_DGRAM, 0);
     if (sock < 0) {
-        perror("socket");
+        fprintf(stderr, "failed to socket\n");
         return;
     }
 
@@ -82,9 +88,9 @@ void notify_next_user() {
     strncpy(addr.sun_path, sock_path, sizeof(addr.sun_path) - 1);
 
     if (sendto(sock, "go", 2, 0, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
-        perror("notify failed");
+        fprintf(stderr, "failed to notify\n");
     } else {
-        printf("[S] nofity next user done successfully!\n");
+        printf("nofity next user done successfully!\n");
     }
 
     close(sock);
@@ -110,7 +116,7 @@ void wait_for_notify(const char *user) {
 void write_log(const char *user, const char *status) {
     FILE *fp = fopen(LOG_FILE, "a");
     if (!fp) {
-        perror("write_log: failed to open LOG_FILE");
+        fprintf(stderr, "failed to open LOG_FILE");
         return;
     }
 
