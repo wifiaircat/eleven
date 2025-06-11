@@ -28,8 +28,7 @@ int main(){
     //username = my name
     char *username = getlogin();
     if (username == NULL) {
-        perror("getlogin: failed\n");
-        //printf("[F] Failed to get username\n");
+        fprintf(stderr, "failed to getlogin\n");
     }
 
     char cur_usr_buffer[256];
@@ -48,7 +47,7 @@ int main(){
     int ins_ret = system(ins_cmd); // success = 0
     if (ins_ret){ // insmod failed
         //printf("[F] Failed to insmod from %s\n", username);
-        strcpy(status_mesg, "failed to insmod from");
+        strcpy(status_mesg, "failed to insmod -");
         success = FALSE;
     } else { // insmod success
         // 2. mount
@@ -62,7 +61,7 @@ int main(){
             // me != cur_user
             FILE* fp = popen(CMD_CUR_USER, "r"); 
             if (!fp) {
-                perror("popen: failed");
+                fprintf(stderr, "failed to popen\n");
             }
 
             if (fgets(cur_usr_buffer, sizeof(cur_usr_buffer), fp) != NULL) {
@@ -71,15 +70,15 @@ int main(){
                 printf("[!] It's already mounted from :%s\n", mount_point);
                 // addtional : show how many people in waiting queue
             }
-            strcpy(status_mesg, "[F] Mount failed from");
+            strcpy(status_mesg, "failed to mount -");
             success = FALSE;
             fclose(fp);
         }
     }
 
     if (success){
-        printf("[S] insmod and mount done successfully!\n");
-        strcpy(status_mesg, "insmod and mount from");
+        printf("insmod and mount done successfully!\n");
+        strcpy(status_mesg, "succeed to insmod and mount -");
     }
 
     printf("%s %s\n", status_mesg, username);
@@ -88,11 +87,11 @@ int main(){
     if (success){
         pthread_t tid;
         if (pthread_create(&tid, NULL, run_check_status, NULL) != 0) {
-            perror("pthread_create failed");
+            fprintf(stderr, "failed to pthread_create\n");
         } else {
             pthread_detach(tid);
+            printf("( you can now run other commands such as ./fio_*.sh )\n");
         }
-        printf("[*] You can now run other commands such as ./fio.sh\n");
     } else {
         printf("Do you want to wait? (yes/no): ");
         char answer[4];
@@ -117,12 +116,12 @@ void enqueue(const char *user) {
 void* run_check_status(void *arg) {
     pid_t pid = fork();
     if (pid < 0) {
-        perror("fork failed");
+        fprintf(stderr, "failed to fork\n");
         pthread_exit(NULL);
     }
     if (pid == 0) { // child
         execl("./check_status", "check_status", NULL);
-        perror("execl failed");
+        fprintf(stderr, "failed to execl\n");
         exit(1);
     }
     pthread_exit(NULL);
@@ -131,7 +130,7 @@ void* run_check_status(void *arg) {
 void write_log(const char *user, const char *status) {
     FILE *fp = fopen(LOG_FILE, "a");
     if (!fp) {
-        perror("write_log: failed to open LOG_FILE");
+        fprintf(stderr, "failed to open LOG_FILE\n");
         return;
     }
 

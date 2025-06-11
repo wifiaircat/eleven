@@ -7,16 +7,18 @@
 #define CMD_DMESG "sudo dmesg | grep nvmevirt | tail -n 1"
 #define LOGLEVEL_PATH "/proc/sys/kernel/printk"
 #define UPTIME_PATH "/proc/uptime"
-#define INTERVAL_SEC 3000
+#define INTERVAL_SEC 30
 
 int main() {
     // 1. who is current user
         FILE *fp = popen(CMD_CUR_USER, "r");
-        if (!fp) { perror("fail to popen"); }
+        if (!fp) {
+            fprintf(stderr, "failed to popen\n");
+        }
 
         char cur_usr_buffer[256];
         if (!fgets(cur_usr_buffer, sizeof(cur_usr_buffer), fp)) {
-            fprintf(stderr, "[F] Failed to read /proc/mounts\n");
+            fprintf(stderr, "failed to read /proc/mounts\n");
             pclose(fp); return 1;
         }
         pclose(fp);
@@ -29,13 +31,13 @@ int main() {
         int console_loglevel = -1;
         fp = fopen(LOGLEVEL_PATH, "r");
         if (!fp || fscanf(fp, "%d", &console_loglevel) != 1) {
-            fprintf(stderr, "[F] Failed to read loglevel\n");
+            fprintf(stderr, "failed to read loglevel\n");
         }
         fclose(fp);
 
         if (console_loglevel < 6) {
-            fprintf(stderr, "[!] Loglevel %d is < 6. nvmevirt logs might not appear.\n", console_loglevel);
-            fprintf(stderr, "    Try: echo 6 > /proc/sys/kernel/printk\n");
+            fprintf(stderr, "loglevel %d is < 6. nvmevirt logs might not appear.\n", console_loglevel);
+            fprintf(stderr, "try: echo 6 > /proc/sys/kernel/printk\n");
         }
 
     while(1){
@@ -43,13 +45,13 @@ int main() {
         char dmesg_line[1024];
         fp = popen(CMD_DMESG, "r");
         if (!fp) {
-            perror("[X] popen for CMD_DMESG failed");
+            fprintf(stderr, "failed to popen for CMD_DMESG\n");
             sleep(10);
             continue;
         }
 
         if (!fgets(dmesg_line, sizeof(dmesg_line), fp)) {
-            fprintf(stderr, "[X] Failed to read dmesg nvmevirt line\n");
+            fprintf(stderr, "failed to read dmesg_line\n");
             if(fp) fclose(fp);
             sleep(10);
             continue;
@@ -58,7 +60,7 @@ int main() {
 
         double last_time = -1, uptime_now = -1;
         if (sscanf(dmesg_line, "[%lf]", &last_time) != 1) {
-            fprintf(stderr, "[X] Failed to parse timestamp from dmesg\n");
+            fprintf(stderr, "failed to parse timestamp from dmesg_line\n");
             sleep(10);
             continue;
         }
@@ -66,7 +68,7 @@ int main() {
         // 4. read current system utime
         fp = fopen(UPTIME_PATH, "r");
         if (!fp || fscanf(fp, "%lf", &uptime_now) != 1) {
-            fprintf(stderr, "[X] Failed to read /proc/uptime\n");
+            fprintf(stderr, "failed to read /proc/uptime\n");
             if(fp) fclose(fp);
             sleep(10);
             continue;
