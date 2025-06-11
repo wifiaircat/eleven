@@ -12,7 +12,6 @@
 #define LOG_FILE "virt_log.txt"
 
 void notify_next_user();
-void wait_for_notify(const char *user);
 void write_log(const char *user, const char *status);
 int dequeue(char *next_user);
 
@@ -96,22 +95,6 @@ void notify_next_user() {
     close(sock);
 }
 
-void wait_for_notify(const char *user) {
-    char sock_path[108];
-    snprintf(sock_path, sizeof(sock_path), SOCKET_FMT, user);
-
-    int sock = socket(AF_UNIX, SOCK_DGRAM, 0);
-    struct sockaddr_un addr = {0};
-    addr.sun_family = AF_UNIX;
-    strncpy(addr.sun_path, sock_path, sizeof(addr.sun_path) - 1);
-
-    unlink(sock_path);
-    bind(sock, (struct sockaddr*)&addr, sizeof(addr));
-    recv(sock, NULL, 1, 0);  // blocking
-
-    close(sock);
-    unlink(sock_path);
-}
 
 void write_log(const char *user, const char *status) {
     FILE *fp = fopen(LOG_FILE, "a");
