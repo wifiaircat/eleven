@@ -7,7 +7,7 @@ int main() {
     char command[64];
 
     while (1) {
-        printf("Enter command (mount / wait / umount / exit): ");
+        printf("> Enter command (mount / wait / umount / exit): ");
         scanf("%s", command);
 
         if (strcmp(command, "mount") == 0) {
