@@ -93,7 +93,8 @@ void notify_next_user() {
     addr.sun_family = AF_UNIX;
     strncpy(addr.sun_path, sock_path, sizeof(addr.sun_path) - 1);
 
-    if (sendto(sock, "go", 2, 0, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
+    int sendto_ret = sendto(sock, "go", 2, 0, (struct sockaddr *)&addr, sizeof(addr));
+    if (sendto_ret < 0) {
         fprintf(stderr, "failed to notify\n");
     } else {
         printf("nofity next user done successfully!\n");

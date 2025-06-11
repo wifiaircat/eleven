@@ -12,6 +12,7 @@ int main() {
 
         if (strcmp(command, "mount") == 0) {
             system("./mount");
+            break;
         } else if (strcmp(command, "wait") == 0){
             system("./wait");
         } else if (strcmp(command, "umount") == 0) {

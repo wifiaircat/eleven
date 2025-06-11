@@ -29,6 +29,7 @@ int main(){
     char *username = getlogin();
     if (username == NULL) {
         fprintf(stderr, "failed to getlogin\n");
+        username = "empty";
     }
 
     char cur_usr_buffer[256];
@@ -86,11 +87,14 @@ int main(){
 
     if (success){
         pthread_t tid;
-        if (pthread_create(&tid, NULL, run_check_status, NULL) != 0) {
+        int tid_ret = pthread_create(&tid, NULL, run_check_status, NULL);
+        if (tid_ret != 0) {
             fprintf(stderr, "failed to pthread_create\n");
         } else {
             pthread_detach(tid);
             printf("( you can now run other commands such as ./fio_*.sh )\n");
+            sleep(1);
+            pthread_exit(NULL);
         }
     } else {
         printf("Do you want to wait? (yes/no): ");
@@ -116,14 +120,37 @@ void enqueue(const char *user) {
 void* run_check_status(void *arg) {
     pid_t pid = fork();
     if (pid < 0) {
-        fprintf(stderr, "failed to fork\n");
+        perror("1st fork failed");
         pthread_exit(NULL);
     }
-    if (pid == 0) { // child
-        execl("./check_status", "check_status", NULL);
-        fprintf(stderr, "failed to execl\n");
-        exit(1);
+    if (pid == 0) { // First child
+        if (setsid() < 0) {
+            perror("setsid failed");
+            exit(1);
+        }
+
+        pid_t pid2 = fork();
+        if (pid2 < 0) {
+            perror("2nd fork failed");
+            exit(1);
+        }
+        if (pid2 == 0) { // Second child - real daemon
+            char *username = getlogin();
+            if (username == NULL) username = "unknown";
+            write_log(username, "check_status daemon started\n");
+
+            fclose(stdin);
+            fclose(stdout);
+            fclose(stderr);
+
+            execl("./check_status", "check_status", NULL);
+            
+            write_log(username, "check_status execl failed\n");
+            exit(1);
+        }
+        exit(0); // First child exit
     }
+    // Parent returns immediately
     pthread_exit(NULL);
 }
 
