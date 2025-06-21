@@ -103,21 +103,3 @@ void notify_next_user() {
 
     close(sock);
 }
-
-void write_log(const char *user, const char *status) {
-    FILE *fp = fopen(LOG_FILE, "a");
-    if (!fp) {
-        fprintf(stderr, "failed to open LOG_FILE");
-        return;
-    }
-
-    time_t now = time(NULL);
-    struct tm *t = localtime(&now);
-
-    fprintf(fp, "[%04d-%02d-%02d %02d:%02d:%02d] user=%s status=%s\n",
-        t->tm_year + 1900, t->tm_mon + 1, t->tm_mday,
-        t->tm_hour, t->tm_min, t->tm_sec,
-        user, status);
-
-    fclose(fp);
-}
