@@ -1,23 +1,18 @@
-# eleven
-System Programming 2025 Team 11
+### Team eleven
+System Programming 2025 Team 11 _ 김시연, 임정민, 전하운
 
+# Virt_Manager
 
-virt_manager/
+<img width="748" alt="image" src="https://github.com/user-attachments/assets/21012aef-ba32-4df4-a3e0-9863b400a1bb" />
 
-├── Makefile
+## how to use
 
-pt 1
+## mount
 
-├── conduct.c                  # insmod/mount + append log
+## check_status
 
-├── track_status.c             # 비활성 사용자 감시 + 알림
+## wait
 
-├── virt_log.txt               # log file
+## notify
 
-pt 2
-
-├── virt_queue.txt             # 예약 대기열 파일
-
-pt 3
-
-├── quit.c                     # rmmod/umount + append log
+## umount
