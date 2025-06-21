@@ -14,5 +14,7 @@
 #include "umount.h"
 
 int umount();
+void notify_next_user();
+int dequeue(char *next_user);
 
 #endif

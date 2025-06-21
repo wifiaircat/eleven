@@ -4,6 +4,7 @@
 #include <string.h>
 #include <time.h>
 #include <pthread.h>
+#include "log_util.h"
 
 #define TRUE 1
 #define FALSE 0
@@ -22,10 +23,9 @@
 
 void* run_check_status(void *arg);
 void enqueue(const char *user);
-int count_lines();
-void write_log(const char *user, const char *status);
+int read_waitQ();
 
-int main(){
+int mount(){
     //username = my name
     char *username = getlogin();
     if (username == NULL) {
@@ -173,23 +173,4 @@ int read_waitQ() {
 
     fclose(f);
     return count;
-}
-
-
-void write_log(const char *user, const char *status) {
-    FILE *fp = fopen(LOG_FILE, "a");
-    if (!fp) {
-        fprintf(stderr, "failed to open LOG_FILE\n");
-        return;
-    }
-
-    time_t now = time(NULL);
-    struct tm *t = localtime(&now);
-
-    fprintf(fp, "[%04d-%02d-%02d %02d:%02d:%02d] user=%s status=%s\n",
-        t->tm_year + 1900, t->tm_mon + 1, t->tm_mday,
-        t->tm_hour, t->tm_min, t->tm_sec,
-        user, status);
-
-    fclose(fp);
 }

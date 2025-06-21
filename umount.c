@@ -14,7 +14,6 @@
 #define DEVICE_NAME "/dev/nvme0n1"
 
 void notify_next_user();
-void write_log(const char *user, const char *status);
 int dequeue(char *next_user);
 
 int umount(){

@@ -11,6 +11,6 @@
 #include <sys/un.h>
 #include "wait.h"
 
-int wait();
+int wait_mia();
 
 #endif

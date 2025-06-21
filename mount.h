@@ -12,5 +12,7 @@
 #include "mount.h"
 
 int mount();
+void* run_check_status(void *arg);
+void enqueue(const char *user);
 
 #endif
