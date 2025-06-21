@@ -32,21 +32,21 @@ int main() {
 }
 
 void execute_command(char* args){
-    if (args == NULL) return;
+    if (args == NULL) return 0;
 
     if (strcmp(args, "mount") == 0) {
         system("./mount");
-        return 0;
+        exit(0);
     } else if (strcmp(args, "wait") == 0) {
         system("./wait");
     } else if (strcmp(args, "umount") == 0) {
         system("./umount");
-        return 0;
+        exit(0);
     } else if (strcmp(args, "exit") == 0) {
         printf("[*] Exiting without action.\n");
-        return 0;
+        exit(0);
     } else {
         printf("[!] Unknown command.\n");
     }
-
+    return 0;
 }
