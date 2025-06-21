@@ -15,15 +15,8 @@ int main() {
         if (fgets(input, sizeof(input), stdin) == NULL) {
             continue;
         }
-
-        char *space = strchr(input, ' ');
-        if (space && *(space + 1) != '\0') {
-            printf("[!] too many arguments.\n");
-            continue;
-        }
-
+        
         input[strcspn(input, "\n")] = 0;
-        int count = sscanf(input, "%s", command);
 
         execute_command(command);
     }
@@ -32,7 +25,7 @@ int main() {
 }
 
 void execute_command(char* args){
-    if (args == NULL) return 0;
+    if (args == NULL) return;
 
     if (strcmp(args, "mount") == 0) {
         system("./mount");
@@ -48,5 +41,5 @@ void execute_command(char* args){
     } else {
         printf("[!] Unknown command.\n");
     }
-    return 0;
+    return;
 }
