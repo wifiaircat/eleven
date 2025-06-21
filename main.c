@@ -32,17 +32,17 @@ int main() {
 }
 
 void execute_command(char* args){
-    if (args[0] == NULL) return;
+    if (args == NULL) return;
 
-    if (strcmp(args[0], "mount") == 0) {
+    if (strcmp(args, "mount") == 0) {
         system("./mount");
         return 0;
-    } else if (strcmp(args[0], "wait") == 0) {
+    } else if (strcmp(args, "wait") == 0) {
         system("./wait");
-    } else if (strcmp(args[0], "umount") == 0) {
+    } else if (strcmp(args, "umount") == 0) {
         system("./umount");
         return 0;
-    } else if (strcmp(args[0], "exit") == 0) {
+    } else if (strcmp(args, "exit") == 0) {
         printf("[*] Exiting without action.\n");
         return 0;
     } else {
