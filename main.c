@@ -2,6 +2,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include "wait.h"
+#include "check_status.h"
+#include "umount.h"
+#include "mount.h"
 
 void execute_command(char* args);
 
