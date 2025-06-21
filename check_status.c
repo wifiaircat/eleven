@@ -9,7 +9,7 @@
 #define UPTIME_PATH "/proc/uptime"
 #define INTERVAL_SEC 3000
 
-int main() {
+int check_status() {
     // 1. who is current user
         FILE *fp = popen(CMD_CUR_USER, "r");
         if (!fp) {

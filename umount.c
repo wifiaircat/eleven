@@ -17,7 +17,7 @@ void notify_next_user();
 void write_log(const char *user, const char *status);
 int dequeue(char *next_user);
 
-int main(){
+int umount(){
     char status_mesg[256] = "NULL\n";
     char umt_cmd[256];
 

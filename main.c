@@ -15,7 +15,7 @@ int main() {
         if (fgets(input, sizeof(input), stdin) == NULL) {
             continue;
         }
-        
+
         input[strcspn(input, "\n")] = 0;
 
         execute_command(command);
@@ -28,12 +28,12 @@ void execute_command(char* args){
     if (args == NULL) return;
 
     if (strcmp(args, "mount") == 0) {
-        system("./mount");
+        mount();
         exit(0);
     } else if (strcmp(args, "wait") == 0) {
-        system("./wait");
+        wait();
     } else if (strcmp(args, "umount") == 0) {
-        system("./umount");
+        umount();
         exit(0);
     } else if (strcmp(args, "exit") == 0) {
         printf("[*] Exiting without action.\n");

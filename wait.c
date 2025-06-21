@@ -10,7 +10,7 @@
 
 void wait_for_notify(const char *user);
 
-int main() {
+int wait() {
     char *username = getlogin();
     if (username == NULL) {
         perror("getlogin failed");
