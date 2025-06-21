@@ -1,8 +1,12 @@
-// log_util.h
-#ifndef LOG_UTIL_H
-#define LOG_UTIL_H
+//log_util.h
 
-void write_log(const char *user, const char *status);
+#ifdef LOG_UTIL
+#define LOG_UTIL
 
-#endif // LOG_UTIL_H
+#include <stdio.h>
+#include <time.h>
+#include "log_util.h"
 
+void write_log(const char *user, const char *status)
+
+#endif

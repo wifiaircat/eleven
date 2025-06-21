@@ -5,6 +5,7 @@
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <time.h>
+#include "log_util.h"
 
 #define SOCKET_FMT "/tmp/notify_%s.sock"
 

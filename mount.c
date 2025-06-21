@@ -22,6 +22,7 @@
 
 void* run_check_status(void *arg);
 void enqueue(const char *user);
+int count_lines();
 void write_log(const char *user, const char *status);
 
 int main(){
@@ -64,12 +65,14 @@ int main(){
             if (!fp) {
                 fprintf(stderr, "failed to popen\n");
             }
+            int count_waitQ = 0;
 
             if (fgets(cur_usr_buffer, sizeof(cur_usr_buffer), fp) != NULL) {
                 char *device = strtok(cur_usr_buffer, " ");
                 mount_point = strtok(NULL, " ");
                 printf("[!] It's already mounted from :%s\n", mount_point);
-                // addtional : show how many people in waiting queue
+                count_waitQ = read_waitQ();
+                printf("there is %d in wait Queue\n", count_waitQ);
             }
             strcpy(status_mesg, "failed to mount -");
             success = FALSE;
@@ -153,6 +156,25 @@ void* run_check_status(void *arg) {
     // Parent returns immediately
     pthread_exit(NULL);
 }
+
+int read_waitQ() {
+    FILE *f = fopen("virt_queue.txt", "r");
+    if (f == NULL) {
+        perror("open q_file failed");
+        exit(1);
+    }
+
+    int count = 0;
+    char buffer[256];
+
+    while (fgets(buffer, sizeof(buffer), f)) {
+        count++;
+    }
+
+    fclose(f);
+    return count;
+}
+
 
 void write_log(const char *user, const char *status) {
     FILE *fp = fopen(LOG_FILE, "a");

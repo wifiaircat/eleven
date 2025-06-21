@@ -7,7 +7,7 @@
 #define CMD_DMESG "sudo dmesg | grep nvmevirt | tail -n 1"
 #define LOGLEVEL_PATH "/proc/sys/kernel/printk"
 #define UPTIME_PATH "/proc/uptime"
-#define INTERVAL_SEC 30
+#define INTERVAL_SEC 3000
 
 int main() {
     // 1. who is current user
