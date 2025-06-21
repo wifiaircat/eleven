@@ -1,5 +1,5 @@
 ### Team eleven
-System Programming 2025 Team 11 _ ê¹€ì‹œì—°, ìž„ì •ë¯¼, ì „í•˜ìš´
+System Programming 2025 Team 11 _ ê¹??‹œ?—°, ?ž„? •ë¯?, ? „?•˜?š´
 
 # Virt_Manager
 
