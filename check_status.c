@@ -56,11 +56,11 @@ int check_status() {
 
         if (!fgets(dmesg_line, sizeof(dmesg_line), fp)) {
             fprintf(stderr, "failed to read dmesg_line\n");
-            if(fp) fclose(fp);
+            if(fp) pclose(fp);
             sleep(10);
             continue;
         }
-        fclose(fp);
+        pclose(fp);
 
         double last_time = -1, uptime_now = -1;
         if (sscanf(dmesg_line, "[%lf]", &last_time) != 1) {
