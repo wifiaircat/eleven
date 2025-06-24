@@ -74,14 +74,3 @@ rmmod your_module
 ## ? `exit`
 
 Simply exits the `Virt_manager` program safely.
-
----
-
-## ?? Notes
-
-* Make sure to give appropriate permissions if you're using `sudo` commands in `mount.c` and `umount.c`.
-* UNIX domain sockets are used for inter-process notification.
-
----
-
-필요하면 이미지/다이어그램/코드 예시/사용 시나리오도 추가할 수 있어. 더 멋진 README.md 만들고 싶으면 말해줘 :)
