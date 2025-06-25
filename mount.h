@@ -1,6 +1,6 @@
 //mount.c
 
-#ifdef MOUNT
+#ifndef MOUNT
 #define MOUNT
 
 #include <stdio.h>
