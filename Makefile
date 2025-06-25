@@ -11,7 +11,7 @@ all: $(TARGET)
 $(TARGET): $(OBJS)
 	$(CC) $(CFLAGS) -o $@ $(OBJS)
 
-%.o: %.c log_util.h
+%.o: %.c log_util.h mount.h umount.h wait.h check_status.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
