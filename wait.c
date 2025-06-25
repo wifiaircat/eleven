@@ -8,6 +8,31 @@
 #define QUEUE_FILE "virt_queue.txt"
 #define SOCKET_FMT "/tmp/notify_%s.sock"
 
+void wait_for_notify(const char *user);
+
+int wait_mia() {
+    char *username = getlogin();
+    if (username == NULL) {
+        perror("getlogin failed");
+        exit(1);
+    }
+
+    FILE *fp = fopen(QUEUE_FILE, "a");
+    if (!fp) {
+        perror("fopen failed");
+        exit(1);
+    }
+
+    fprintf(fp, "%s\n", username);
+    fclose(fp);
+    printf("[*] User '%s' has been added to the queue.\n", username);
+
+    // Wait for the notification to proceed
+    wait_for_notify(username);
+
+    return 0;
+}
+
 // Wait for socket-based notification
 void wait_for_notify(const char *user) {
     char sock_path[108];
@@ -38,27 +63,4 @@ void wait_for_notify(const char *user) {
 
     close(sock);
     unlink(sock_path);
-}
-
-int main() {
-    char *username = getlogin();
-    if (username == NULL) {
-        perror("getlogin failed");
-        exit(1);
-    }
-
-    FILE *fp = fopen(QUEUE_FILE, "a");
-    if (!fp) {
-        perror("fopen failed");
-        exit(1);
-    }
-
-    fprintf(fp, "%s\n", username);
-    fclose(fp);
-    printf("[*] User '%s' has been added to the queue.\n", username);
-
-    // Wait for the notification to proceed
-    wait_for_notify(username);
-
-    return 0;
 }

@@ -1,4 +1,5 @@
 // log_util.c
+
 #include <stdio.h>
 #include <time.h>
 #include "log_util.h"

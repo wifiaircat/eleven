@@ -1,23 +1,76 @@
-# eleven
+### Team eleven
 System Programming 2025 Team 11
 
+# Virt_Manager
 
-virt_manager/
+<img width="748" alt="image" src="https://github.com/user-attachments/assets/21012aef-ba32-4df4-a3e0-9863b400a1bb" />
 
-├── Makefile
+---
 
-pt 1
+## ? Included Files
 
-├── conduct.c                  # insmod/mount + append log
+```
+main.c, mount.c, check_status.c, wait.c, umount.c, ...
+```
 
-├── track_status.c             # 비활성 사용자 감시 + 알림
+---
 
-├── virt_log.txt               # log file
+## ? How to Use
 
-pt 2
+You can type one of the following commands:
 
-├── virt_queue.txt             # 예약 대기열 파일
+```
+mount / wait / umount / exit
+```
 
-pt 3
+* Modify the device name and mount path in `mount.c` to suit your setup.
 
-├── quit.c                     # rmmod/umount + append log
+---
+
+## ? `mount`
+
+Safely executes `insmod` and `mount`.
+
+### ? Case 1: Success
+
+* Starts tracking whether you're actively using the device.
+* Prevents monopolization by detecting inactivity (customizable).
+* Runs `Virt_manager` automatically.
+* Launches a background thread to monitor activity.
+
+### ? Case 2: Failure
+
+* If the device is in use, the current user is shown.
+* You are prompted to either:
+
+  * `wait`: Add yourself to a FIFO queue.
+  * `no`: Exit the program.
+* When the current user finishes, you��ll be notified.
+
+---
+
+## ? `wait`
+
+Use this command when you know someone else is using the device and you just want to wait without attempting to mount.
+
+* Adds your name directly to the FIFO queue.
+* You'll be notified when it's your turn.
+
+---
+
+## ? `umount`
+
+Safely performs:
+
+```bash
+umount /dev/your_device
+rmmod your_module
+```
+
+* If successful, notifies the next user in the waiting queue.
+
+---
+
+## ? `exit`
+
+Simply exits the `Virt_manager` program safely.

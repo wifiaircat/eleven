@@ -1,3 +1,7 @@
-insmod and mount frominsmod failed frommount failed from bob      pts/1        2025-05-21 12:20
-[2025-05-22 05:40:05] user=bob status=mount failed
-[2025-05-22 10:03:25] user=bob status=mount failed
+[2025-06-11 21:49:00] user=aircat status=succeed to insmod and mount -
+[2025-06-11 21:49:00] user=aircat status=check_status daemon started
+[2025-06-11 21:49:17] user=aircat status=succeed to umount and rmmod
+[2025-06-11 21:50:43] user=aircat status=check_status daemon started
+[2025-06-11 21:51:30] user=aircat status=failed to insmod -
+[2025-06-11 22:08:12] user=aircat status=succeed to umount and rmmod -
+[2025-06-21 15:00:35] user=aircat status=failed to umount and rmmod -

@@ -4,6 +4,7 @@
 #include <string.h>
 #include <time.h>
 #include <pthread.h>
+#include "log_util.h"
 
 #define TRUE 1
 #define FALSE 0
@@ -22,9 +23,9 @@
 
 void* run_check_status(void *arg);
 void enqueue(const char *user);
-void write_log(const char *user, const char *status);
+int read_waitQ();
 
-int main(){
+int mount(){
     //username = my name
     char *username = getlogin();
     if (username == NULL) {
@@ -64,12 +65,14 @@ int main(){
             if (!fp) {
                 fprintf(stderr, "failed to popen\n");
             }
+            int count_waitQ = 0;
 
             if (fgets(cur_usr_buffer, sizeof(cur_usr_buffer), fp) != NULL) {
                 char *device = strtok(cur_usr_buffer, " ");
                 mount_point = strtok(NULL, " ");
                 printf("[!] It's already mounted from :%s\n", mount_point);
-                // addtional : show how many people in waiting queue
+                count_waitQ = read_waitQ();
+                printf("there is %d in wait Queue\n", count_waitQ);
             }
             strcpy(status_mesg, "failed to mount -");
             success = FALSE;
@@ -154,20 +157,20 @@ void* run_check_status(void *arg) {
     pthread_exit(NULL);
 }
 
-void write_log(const char *user, const char *status) {
-    FILE *fp = fopen(LOG_FILE, "a");
-    if (!fp) {
-        fprintf(stderr, "failed to open LOG_FILE\n");
-        return;
+int read_waitQ() {
+    FILE *f = fopen("virt_queue.txt", "r");
+    if (f == NULL) {
+        perror("open q_file failed");
+        exit(1);
     }
 
-    time_t now = time(NULL);
-    struct tm *t = localtime(&now);
+    int count = 0;
+    char buffer[256];
 
-    fprintf(fp, "[%04d-%02d-%02d %02d:%02d:%02d] user=%s status=%s\n",
-        t->tm_year + 1900, t->tm_mon + 1, t->tm_mday,
-        t->tm_hour, t->tm_min, t->tm_sec,
-        user, status);
+    while (fgets(buffer, sizeof(buffer), f)) {
+        count++;
+    }
 
-    fclose(fp);
+    fclose(f);
+    return count;
 }
