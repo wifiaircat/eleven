@@ -11,7 +11,6 @@ void execute_command(char* args);
 
 int main() {
     char input[128];
-    char command[64];
 
     while (1) {
         printf("> Enter command (mount / wait / umount / exit): ");
@@ -22,7 +21,7 @@ int main() {
 
         input[strcspn(input, "\n")] = 0;
 
-        execute_command(command);
+        execute_command(input);
     }
 
     return 0;
